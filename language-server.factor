@@ -59,7 +59,7 @@ IN: language-server
           set-of
         set-of
         send ] ] }
-    [ drop dup "id" swap at "method" swap at send-method-not-found ]
+    [ swap "id" of swap send-method-not-found ]
   } case ;
 
 : handle-notification ( msg method -- )
