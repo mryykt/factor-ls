@@ -1,4 +1,4 @@
-USING: kernel math math.parser io formatting json
+USING: kernel math math.parser io formatting json combinators
 sequences assocs linked-assocs ;
 IN: language-server
 
@@ -42,19 +42,35 @@ IN: language-server
 : send-invalied-request ( -- )
   json-null -32600 "received an invalied request" send-err ;
 
-: dispatch ( -- ? )
-  16 read drop ! read "Content-Length: "
-  "\r\n" read-until drop string>number ! read "nnn"
+: send-method-not-found ( id method -- )
+  -32601 swap send-err ;
+
+: handle-request ( msg method -- )
+  {
+    { "initialize" [ "init" send-log drop ] }
+    [ drop dup "id" swap at "method" swap at send-method-not-found ]
+  } case ;
+
+: handle-notification ( msg method -- )
+  {
+    [ send-log drop ]
+  } case ;
+
+: read-msg ( -- obj )
+  16 read ! read "Content-Length: "
+  "\r\n" read-until drop string>number 1 + ! read "nnn"
   "\r\n" read-until 2drop ! skip blank-line
-  read json>
-  dup "id" swap key?
+  read json> ;
+
+: dispatch ( -- ? )
+  read-msg dup dup "id" swap key?
     [ "method" ?of
-      [ "request" send-log drop ]
-      [ drop ] if ]
+      [ handle-request ]
+      [ 2drop ] if ] ! invalid message
     [ "method" ?of
-      [ "notification" send-log drop ]
-      [ drop send-invalied-request ] if ] if
-    t ;
+      [ handle-notification ]
+      [ 2drop send-invalied-request ] if ] if
+  t ;
 
 : ls ( -- )
   [ dispatch ] loop ;
