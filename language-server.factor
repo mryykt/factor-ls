@@ -69,6 +69,13 @@ IN: language-server
       [ [let :> msg
         ! msg "params" of "textDocument" of "uri" of :> uri
         msg "params" of "textDocument" of "text" of send-log ] ] }
+    { "textDocument/didChange"
+      [ [let :> msg
+        msg "params" of "contentChanges" of length 0 = not
+          [
+            ! msg "params" of "textDocument" of "uri" of :> uri
+          msg "params" of "contentChanges" of dup
+            length 1 - swap nth "text" of send-log ] when ] ] }
     [ send-log drop ]
   } case ;
 
