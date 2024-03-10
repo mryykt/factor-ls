@@ -53,8 +53,11 @@ IN: language-server
         "jsonrpc" "2.0" set-of 
         "id" dup msg at set-of
         "result"
-          <linked-hash> "capabilities" LH{ } set-of
+          <linked-hash>
+          "capabilities"
+            LH{  { "textDocumentSync" 1 } }
           set-of
+        set-of
         send ] ] }
     [ drop dup "id" swap at "method" swap at send-method-not-found ]
   } case ;
@@ -62,6 +65,10 @@ IN: language-server
 : handle-notification ( msg method -- )
   {
     { "initialized" [ drop "initialized." send-log ] }
+    { "textDocument/didOpen"
+      [ [let :> msg
+        ! msg "params" of "textDocument" of "uri" of :> uri
+        msg "params" of "textDocument" of "text" of send-log ] ] }
     [ send-log drop ]
   } case ;
 
