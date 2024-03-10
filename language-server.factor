@@ -47,12 +47,21 @@ IN: language-server
 
 : handle-request ( msg method -- )
   {
-    { "initialize" [ "init" send-log drop ] }
+    { "initialize"
+      [ [let :> msg
+        <linked-hash>
+        "jsonrpc" "2.0" set-of 
+        "id" dup msg at set-of
+        "result"
+          <linked-hash> "capabilities" LH{ } set-of
+          set-of
+        send ] ] }
     [ drop dup "id" swap at "method" swap at send-method-not-found ]
   } case ;
 
 : handle-notification ( msg method -- )
   {
+    { "initialized" [ drop "initialized." send-log ] }
     [ send-log drop ]
   } case ;
 
