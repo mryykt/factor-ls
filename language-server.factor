@@ -30,11 +30,31 @@ IN: language-server
     "message" msg set-of
   send-notification ] ;
 
+: send-err ( id code msg -- )
+  [let :> msg :> code :> id
+  <linked-hash>
+    "jsonrpc" "2.0" set-of
+    "id" id set-of
+    "code" code set-of
+    "message" msg set-of
+    send ] ;
+
+: send-invalied-request ( -- )
+  json-null -32600 "received an invalied request" send-err ;
+
 : dispatch ( -- ? )
   16 read drop ! read "Content-Length: "
   "\r\n" read-until drop string>number ! read "nnn"
   "\r\n" read-until 2drop ! skip blank-line
-  read send-log t ;
+  read json>
+  dup "id" swap key?
+    [ "method" ?of
+      [ "request" send-log drop ]
+      [ drop ] if ]
+    [ "method" ?of
+      [ "notification" send-log drop ]
+      [ drop send-invalied-request ] if ] if
+    t ;
 
 : ls ( -- )
   [ dispatch ] loop ;
