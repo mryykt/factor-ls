@@ -108,6 +108,11 @@ SYMBOLS: publish-diagnostics-capable ;
             ! msg "params" of "textDocument" of "uri" of :> uri
           msg "params" of "contentChanges" of dup
             length 1 - swap nth "text" of send-log ] when ] ] }
+    { "textDocument/didClose"
+      [ [let :> msg
+        msg "params" of "textDocument" of "uri" of
+        { }
+        send-publish-diagnostics ] ] }
     [ send-log drop ]
   } case ;
 
