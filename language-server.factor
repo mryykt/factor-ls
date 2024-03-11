@@ -1,4 +1,5 @@
-USING: kernel math math.parser io formatting json combinators
+USING: kernel io namespaces
+json math math.parser formatting combinators
 sequences assocs linked-assocs ;
 IN: language-server
 
@@ -45,20 +46,27 @@ IN: language-server
 : send-method-not-found ( id method -- )
   -32601 swap send-err ;
 
+! global variable
+SYMBOLS: publish-diagnostics-capable ;
+
+: initialize ( msg -- )
+  [let :> msg
+  <linked-hash>
+  "jsonrpc" "2.0" set-of 
+  "id" dup msg at set-of
+  "result"
+    <linked-hash>
+    "capabilities"
+      LH{  { "textDocumentSync" 1 } }
+    set-of
+  set-of
+  msg "params" of "capabilities" of "textDocument" of
+    [ "publishDiagnostics" of [ t publish-diagnostics-capable set-global ] when ] when*
+  send ] ;
+
 : handle-request ( msg method -- )
   {
-    { "initialize"
-      [ [let :> msg
-        <linked-hash>
-        "jsonrpc" "2.0" set-of 
-        "id" dup msg at set-of
-        "result"
-          <linked-hash>
-          "capabilities"
-            LH{  { "textDocumentSync" 1 } }
-          set-of
-        set-of
-        send ] ] }
+    { "initialize" [ initialize ] }
     [ swap "id" of swap send-method-not-found ]
   } case ;
 
@@ -96,6 +104,7 @@ IN: language-server
   t ;
 
 : ls ( -- )
+  f publish-diagnostics-capable set-global
   [ dispatch ] loop ;
 
 MAIN: ls
