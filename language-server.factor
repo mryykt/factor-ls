@@ -1,7 +1,10 @@
 USING: kernel io namespaces
 json math math.parser formatting combinators
-sequences assocs linked-assocs ;
+arrays sequences assocs linked-assocs ;
 IN: language-server
+
+! global variable
+SYMBOLS: publish-diagnostics-capable ;
 
 : send ( obj -- )
   >json dup length "Content-Length: %d\r\n\r\n" printf
@@ -31,6 +34,20 @@ IN: language-server
     "message" msg set-of
   send-notification ] ;
 
+: send-publish-diagnostics ( uri diagnostics -- )
+  [let :> diagnostics :> uri
+  publish-diagnostics-capable get-global
+  [
+    <linked-hash>
+    "jsonrpc" "2.0" set-of
+    "method" "textDocument/publishDiagnostics" set-of
+    "params"
+      <linked-hash>
+      "uri" uri set-of
+      "diagnostics" diagnostics set-of
+      set-of
+    send ] when ] ;
+
 : send-err ( id code msg -- )
   [let :> msg :> code :> id
   <linked-hash>
@@ -45,9 +62,6 @@ IN: language-server
 
 : send-method-not-found ( id method -- )
   -32601 swap send-err ;
-
-! global variable
-SYMBOLS: publish-diagnostics-capable ;
 
 : initialize ( msg -- )
   [let :> msg
@@ -70,12 +84,22 @@ SYMBOLS: publish-diagnostics-capable ;
     [ swap "id" of swap send-method-not-found ]
   } case ;
 
+: <range> ( start-line start-char end-line end-char -- range )
+  [| sl sc el ec |
+      <linked-hash>
+      "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
+      "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
+
 : handle-notification ( msg method -- )
   {
     { "initialized" [ drop "initialized." send-log ] }
     { "textDocument/didOpen"
       [ [let :> msg
-        ! msg "params" of "textDocument" of "uri" of :> uri
+        msg "params" of "textDocument" of "uri" of
+        <linked-hash>
+          "range" 0 0 0 5 <range> set-of
+          "message" "diagnostic test" set-of 1array dup >json send-log
+        send-publish-diagnostics
         msg "params" of "textDocument" of "text" of send-log ] ] }
     { "textDocument/didChange"
       [ [let :> msg
