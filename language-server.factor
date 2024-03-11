@@ -4,7 +4,7 @@ arrays sequences assocs linked-assocs ;
 IN: language-server
 
 ! global variable
-SYMBOLS: publish-diagnostics-capable ;
+SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : send ( obj -- )
   >json dup length "Content-Length: %d\r\n\r\n" printf
@@ -79,6 +79,7 @@ SYMBOLS: publish-diagnostics-capable ;
   send ] ;
 
 : handle-request ( msg method -- )
+  dup "request method:%s" sprintf send-log ! for debug
   {
     { "initialize" [ initialize ] }
     [ swap "id" of swap send-method-not-found ]
@@ -90,24 +91,29 @@ SYMBOLS: publish-diagnostics-capable ;
       "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
+: update-source ( uri src -- )
+  swap sources get-global set-at ;
+
 : handle-notification ( msg method -- )
+  dup "notification method:%s" sprintf send-log ! for debug
   {
     { "initialized" [ drop "initialized." send-log ] }
     { "textDocument/didOpen"
       [ [let :> msg
-        msg "params" of "textDocument" of "uri" of
-        <linked-hash>
-          "range" 0 0 0 5 <range> set-of
-          "message" "diagnostic test" set-of 1array dup >json send-log
-        send-publish-diagnostics
-        msg "params" of "textDocument" of "text" of send-log ] ] }
+        msg "params" of "textDocument" of "uri" of dup
+        msg "params" of "textDocument" of "text" of
+        update-source
+        diagnostics get-global
+        send-publish-diagnostics ] ] }
     { "textDocument/didChange"
       [ [let :> msg
         msg "params" of "contentChanges" of length 0 = not
-          [
-            ! msg "params" of "textDocument" of "uri" of :> uri
+          [ msg "params" of "textDocument" of "uri" of dup
           msg "params" of "contentChanges" of dup
-            length 1 - swap nth "text" of send-log ] when ] ] }
+            length 1 - swap nth "text" of
+          update-source
+          diagnostics get-global
+          send-publish-diagnostics ] when ] ] }
     { "textDocument/didClose"
       [ [let :> msg
         msg "params" of "textDocument" of "uri" of
@@ -134,6 +140,8 @@ SYMBOLS: publish-diagnostics-capable ;
 
 : ls ( -- )
   f publish-diagnostics-capable set-global
+  { } >array diagnostics set-global
+  <linked-hash> sources set-global
   [ dispatch ] loop ;
 
 MAIN: ls
