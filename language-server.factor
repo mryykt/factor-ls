@@ -1,6 +1,6 @@
 USING: kernel io namespaces
 json math math.parser formatting combinators
-arrays sequences assocs linked-assocs ;
+sequences assocs linked-assocs ;
 IN: language-server
 
 ! global variable
@@ -57,6 +57,11 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     "message" msg set-of
     send ] ;
 
+: short-msg ( msg -- short-msg )
+  >json dup length 100 <
+  [ ] 
+  [ 0 100 rot subseq ] if ;
+
 : send-invalied-request ( -- )
   json-null -32600 "received an invalied request" send-err ;
 
@@ -79,7 +84,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   send ] ;
 
 : handle-request ( msg method -- )
-  dup "request method:%s" sprintf send-log ! for debug
   {
     { "initialize" [ initialize ] }
     [ swap "id" of swap send-method-not-found ]
@@ -95,7 +99,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   swap sources get-global set-at ;
 
 : handle-notification ( msg method -- )
-  dup "notification method:%s" sprintf send-log ! for debug
   {
     { "initialized" [ drop "initialized." send-log ] }
     { "textDocument/didOpen"
@@ -129,7 +132,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   read json> ;
 
 : dispatch ( -- ? )
-  read-msg dup dup "id" swap key?
+  read-msg dup dup dup short-msg send-log "id" swap key?
     [ "method" ?of
       [ handle-request ]
       [ 2drop ] if ] ! invalid message
@@ -140,7 +143,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : ls ( -- )
   f publish-diagnostics-capable set-global
-  { } >array diagnostics set-global
+  { } diagnostics set-global
   <linked-hash> sources set-global
   [ dispatch ] loop ;
 
