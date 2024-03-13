@@ -1,4 +1,4 @@
-USING: kernel io namespaces
+USING: kernel io namespaces continuations
 json math math.parser formatting combinators
 sequences assocs linked-assocs ;
 IN: language-server
@@ -56,11 +56,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     "code" code set-of
     "message" msg set-of
     send ] ;
-
-: short-msg ( msg -- short-msg )
-  >json dup length 100 <
-  [ ] 
-  [ 0 100 rot subseq ] if ;
 
 : send-invalied-request ( -- )
   json-null -32600 "received an invalied request" send-err ;
@@ -132,7 +127,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   read json> ;
 
 : dispatch ( -- ? )
-  read-msg dup dup dup short-msg send-log "id" swap key?
+  read-msg dup dup "id" swap key?
     [ "method" ?of
       [ handle-request ]
       [ 2drop ] if ] ! invalid message
@@ -145,6 +140,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   f publish-diagnostics-capable set-global
   { } diagnostics set-global
   <linked-hash> sources set-global
-  [ dispatch ] loop ;
+  [ [ dispatch ] loop ] [ "error: %u" sprintf send-log ] recover ;
 
 MAIN: ls
