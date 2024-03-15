@@ -122,8 +122,8 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : read-msg ( -- obj )
   16 read drop ! read "Content-Length: "
-  "\r\n" read-until drop string>number 2 + ! read "nnn"
-  "\r\n" read-until 2drop ! skip blank-line
+  "\r" read-until drop string>number "\n" read-until 2drop ! read "nnn"
+  "\n" read-until 2drop ! skip blank-line
   read json> ;
 
 : dispatch ( -- ? )
