@@ -1,4 +1,4 @@
-USING: kernel io namespaces continuations
+USING: kernel io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string namespaces continuations
 json math math.parser formatting combinators
 sequences assocs linked-assocs ;
 IN: language-server
@@ -124,7 +124,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   16 read drop ! read "Content-Length: "
   "\r" read-until drop string>number "\n" read-until 2drop ! read "nnn"
   "\n" read-until 2drop ! skip blank-line
-  read json> ;
+  read utf8 decode json> ;
 
 : dispatch ( -- ? )
   read-msg dup dup "id" swap key?
@@ -140,6 +140,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   f publish-diagnostics-capable set-global
   { } diagnostics set-global
   <linked-hash> sources set-global
+  binary decode-input
   [ [ dispatch ] loop ] [ "error: %u" sprintf send-log ] recover ;
 
 MAIN: ls
