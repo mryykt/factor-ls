@@ -10,7 +10,7 @@ TUPLE: token line character text ;
   <token> suffix ;
 
 : tokenize ( str -- tokens )
-  "\n" split <lexer>
+  split-lines <lexer>
     [ { }
-      [ lexer get dup line>> swap column>> ?scan-token dup ]
+      [ lexer get dup still-parsing-line? not [ dup next-line ] when dup line>> swap column>> ?scan-token dup ]
       [ add-token ] while ] with-lexer 3drop ;
