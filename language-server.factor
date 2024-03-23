@@ -1,7 +1,12 @@
-USING: kernel io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string namespaces continuations
+USING: kernel io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string namespaces continuations accessors
 json math math.parser formatting combinators
-sequences assocs linked-assocs ;
+sequences assocs linked-assocs
+language-server.tokenize ;
 IN: language-server
+
+TUPLE: source vocab-name tokens ;
+: <source> ( tokens vocab-name -- source )
+  source new swap >>vocab-name swap >>tokens ;
 
 ! global variable
 SYMBOLS: publish-diagnostics-capable diagnostics sources ;
@@ -91,7 +96,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
 : update-source ( uri src -- )
-  swap sources get-global set-at ;
+  swap tokenize <source> sources get-global set-at ;
 
 : handle-notification ( msg method -- )
   {
