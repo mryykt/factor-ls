@@ -4,9 +4,9 @@ sequences assocs linked-assocs
 language-server.tokenize ;
 IN: language-server
 
-TUPLE: source vocab-name tokens ;
-: <source> ( tokens vocab-name -- source )
-  source new swap >>vocab-name swap >>tokens ;
+TUPLE: source vocab-name vocab-names tokens ;
+: <source> ( tokens vocab-names vocab-name -- source )
+  source new swap >>vocab-name swap >>vocab-names swap >>tokens ;
 
 ! global variable
 SYMBOLS: publish-diagnostics-capable diagnostics sources ;
