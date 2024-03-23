@@ -96,7 +96,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
 : update-source ( uri src -- )
-  swap tokenize <source> sources get-global set-at ;
+  swap [ tokenize <source> sources get-global set-at ] [ sprintf "tokenize error:%u" send-log 2drop ] recover ;
 
 : handle-notification ( msg method -- )
   {
