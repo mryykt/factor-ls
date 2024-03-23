@@ -9,7 +9,7 @@ TUPLE: token line character text ;
 SYMBOLS: current-vocab loaded-vocab ;
 
 : next-token ( -- line character str )
-  lexer get dup still-parsing-line? not [ dup next-line ] when dup line>> swap column>> ?scan-token ;
+  lexer get dup still-parsing-line? not [ dup next-line ] when dup line>> swap column>> scan-token ;
 
 : add-vocab-names ( tokens -- tokens semicolon )
   [ next-token dup ";" = ]
@@ -29,7 +29,7 @@ SYMBOLS: current-vocab loaded-vocab ;
   { } loaded-vocab set-global
   split-lines <lexer>
     [ { }
-      [ next-token dup ]
+      [ lexer get dup still-parsing-line? not [ dup next-line ] when dup line>> swap column>> ?scan-token dup ]
       [ add-token ] while ] with-lexer 3drop
     loaded-vocab-names get-global
     current-vocab get-global ;
