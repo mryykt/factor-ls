@@ -80,7 +80,10 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     "capabilities"
       <linked-hash>
       "textDocumentSync" 1 set-of 
-      "completionProvider" LH{ } set-of
+      "completionProvider"
+        LH{ }
+          "triggerCharacters" { " " } set-of
+        set-of
     set-of
   set-of
   msg "params" of "capabilities" of "textDocument" of
