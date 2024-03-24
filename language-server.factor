@@ -110,14 +110,14 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
-: push-words ( words vocab-name assoc -- )
-  [let :> assoc :> vocab-name
-  [ name>> vocab-name swap assoc set-at ] each ] ;
+: push-words ( words assoc -- )
+  [let :> assoc
+  [ dup name>> assoc set-at ] each ] ;
 
 : make-word-list ( vocabs vocab -- assoc )
   [let <linked-hash> :> word-list
-  dup >vocab-link vocab-words swap word-list push-words
-  [ dup >vocab-link vocab-words swap word-list push-words ] each
+  >vocab-link vocab-words word-list push-words
+  [ >vocab-link vocab-words word-list push-words ] each
   word-list
   ] ;
 
