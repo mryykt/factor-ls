@@ -78,16 +78,29 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   "result"
     <linked-hash>
     "capabilities"
-      LH{  { "textDocumentSync" 1 } }
+      <linked-hash>
+      "textDocumentSync" 1 set-of 
+      "completionProvider" LH{ } set-of
     set-of
   set-of
   msg "params" of "capabilities" of "textDocument" of
     [ "publishDiagnostics" of [ t publish-diagnostics-capable set-global ] when ] when*
   send ] ;
 
+: completion ( msg -- )
+  [let :> msg
+  msg "params" of "textDocument" of "uri" of
+  sources get-global at word-list>> keys
+  [ "label" <linked-hash> spin set-of ] map
+  "result" <linked-hash> spin set-of
+  "jsonrpc" "2.0" set-of
+  "id" dup msg at set-of
+  send ] ;
+
 : handle-request ( msg method -- )
   {
     { "initialize" [ initialize ] }
+    { "textDocument/completion" [ completion ] }
     [ swap "id" of swap send-method-not-found ]
   } case ;
 
