@@ -91,7 +91,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   [let :> msg
   msg "params" of "textDocument" of "uri" of
   sources get-global at word-list>> keys
-  [ "label" <linked-hash> spin set-of ] map
+  [ "label" <linked-hash> spin set-of "kind" 3 set-of ] map
   "result" <linked-hash> spin set-of
   "jsonrpc" "2.0" set-of
   "id" dup msg at set-of
