@@ -1,12 +1,14 @@
-USING: kernel io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string namespaces continuations accessors
+USING: kernel  namespaces continuations accessors vocabs vocabs.loader
+io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
 json math math.parser formatting combinators
 sequences assocs linked-assocs
 language-server.tokenize ;
 IN: language-server
 
-TUPLE: source vocab-name vocab-names tokens ;
-: <source> ( tokens vocab-names vocab-name -- source )
-  source new swap >>vocab-name swap >>vocab-names swap >>tokens ;
+TUPLE: source tokens vocab-name loaded-vocabs word-list ;
+
+: <source> ( -- source )
+  source new ;
 
 ! global variable
 SYMBOLS: publish-diagnostics-capable diagnostics sources ;
@@ -95,17 +97,43 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
-: update-source ( uri src -- )
-  swap [ tokenize <source> sources get-global set-at ] [ sprintf "tokenize error:%u" send-log 2drop ] recover ;
+: new-source ( uri src -- )
+  [ tokenize <source> swap >>vocab-name swap >>loaded-vocabs swap >>tokens swap
+  sources get-global set-at ]
+  [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
+
+: changed-source ( uri src -- )
+  [| uri src |
+  src tokenize
+  uri sources get-global at 
+  swap >>vocab-name swap >>loaded-vocabs tokens<< ] [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
+
+: push-words ( words vocab-name assoc -- )
+  [let :> assoc :> vocab-name
+  [ name>> vocab-name swap assoc set-at ] each ] ;
+
+: make-word-list ( vocabs vocab -- assoc )
+  [let <linked-hash> :> word-list
+  dup >vocab-link vocab-words swap word-list push-words
+  [ dup >vocab-link vocab-words swap word-list push-words ] each
+  word-list
+  ] ;
+
+: update-source ( uri vocabs vocab -- )
+  dup reload
+  make-word-list swap
+  sources get-global at
+  word-list<< ;
 
 : handle-notification ( msg method -- )
+  dup send-log
   {
     { "initialized" [ drop "initialized." send-log ] }
     { "textDocument/didOpen"
       [ [let :> msg
         msg "params" of "textDocument" of "uri" of dup
         msg "params" of "textDocument" of "text" of
-        update-source
+        new-source
         diagnostics get-global
         send-publish-diagnostics ] ] }
     { "textDocument/didChange"
@@ -114,9 +142,15 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
           [ msg "params" of "textDocument" of "uri" of dup
           msg "params" of "contentChanges" of dup
             length 1 - swap nth "text" of
-          update-source
+          changed-source
           diagnostics get-global
           send-publish-diagnostics ] when ] ] }
+    { "textDocument/didSave"
+      [ [let :> msg
+        msg "params" of "textDocument" of "uri" of dup
+        sources get-global at
+        dup loaded-vocabs>> swap vocab-name>>
+        update-source ] ] }
     { "textDocument/didClose"
       [ [let :> msg
         msg "params" of "textDocument" of "uri" of

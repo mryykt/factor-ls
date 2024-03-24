@@ -31,5 +31,5 @@ SYMBOLS: current-vocab loaded-vocab ;
     [ { }
       [ lexer get dup still-parsing-line? not [ dup next-line ] when dup line>> swap column>> ?scan-token dup ]
       [ add-token ] while ] with-lexer 3drop
-    loaded-vocab-names get-global
+    loaded-vocab get-global
     current-vocab get-global ;
