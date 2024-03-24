@@ -122,10 +122,10 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   ] ;
 
 : update-source ( uri vocabs vocab -- )
-  dup reload
+  [ dup reload
   make-word-list swap
   sources get-global at
-  word-list<< ;
+  word-list<< ] [ "tokenize error: %u" sprintf send-log 3drop ] recover ;
 
 : new-source ( uri src -- )
   [ tokenize <source> swap >>vocab-name swap >>loaded-vocabs swap >>tokens
