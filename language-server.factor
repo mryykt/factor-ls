@@ -1,4 +1,4 @@
-USING: kernel  namespaces continuations accessors vocabs vocabs.loader
+USING: kernel  namespaces continuations accessors vocabs vocabs.loader effects
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
 json math math.parser formatting combinators
 sequences assocs linked-assocs
@@ -90,8 +90,11 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 : completion ( msg -- )
   [let :> msg
   msg "params" of "textDocument" of "uri" of
-  sources get-global at word-list>> keys
-  [ "label" <linked-hash> spin set-of "kind" 3 set-of ] map
+  sources get-global at word-list>> values
+  [ dup
+    name>> "label" <linked-hash> spin set-of
+    "detail" rot stack-effect effect>string set-of
+    "kind" 3 set-of ] map
   "result" <linked-hash> spin set-of
   "jsonrpc" "2.0" set-of
   "id" dup msg at set-of
