@@ -110,17 +110,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
       "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
-: new-source ( uri src -- )
-  [ tokenize <source> swap >>vocab-name swap >>loaded-vocabs swap >>tokens swap
-  sources get-global set-at ]
-  [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
-
-: changed-source ( uri src -- )
-  [| uri src |
-  src tokenize
-  uri sources get-global at 
-  swap >>vocab-name swap >>loaded-vocabs tokens<< ] [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
-
 : push-words ( words vocab-name assoc -- )
   [let :> assoc :> vocab-name
   [ name>> vocab-name swap assoc set-at ] each ] ;
@@ -137,6 +126,19 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   make-word-list swap
   sources get-global at
   word-list<< ;
+
+: new-source ( uri src -- )
+  [ tokenize <source> swap >>vocab-name swap >>loaded-vocabs swap >>tokens
+  2dup swap
+  sources get-global set-at
+  dup loaded-vocabs>> swap vocab-name>> update-source ]
+  [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
+
+: changed-source ( uri src -- )
+  [| uri src |
+  src tokenize
+  uri sources get-global at 
+  swap >>vocab-name swap >>loaded-vocabs tokens<< ] [ "tokenize error:%u" sprintf send-log 2drop ] recover ;
 
 : handle-notification ( msg method -- )
   dup send-log
