@@ -2,6 +2,7 @@ USING: kernel  namespaces continuations accessors vocabs vocabs.loader effects
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
 json math math.parser formatting combinators
 sequences assocs linked-assocs
+binary-search math.order
 language-server.tokenize ;
 IN: language-server
 
@@ -104,10 +105,27 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   "id" dup msg at set-of
   send ] ;
 
+: comp-position ( token pos -- <=> )
+  [let :> pos :> tk
+  tk line>> pos "line" of 1 +
+    {
+      { [ 2dup < ] [ 2drop +gt+ ] }
+      { [ 2dup > ] [ 2drop +lt+ ] }
+      [ 2drop tk character>> pos "character" of 1 +
+        {
+          { [ 2dup > ] [ 2drop +lt+ ] }
+          { [ 2dup tk text>> length - >= ] [ 2drop +eq+ ] }
+          [ 2drop +gt+ ] } cond
+      ] } cond
+  ] ;
+
+: search-tokens ( source pos -- token )
+  [ comp-position ] curry search nip ;
+
 : hover ( msg -- )
   "params" of dup
-  "textDocument" of "uri" of swap
-  "position" of 2drop ;
+  "textDocument" of "uri" of sources get-global at tokens>> swap
+  "position" of search-tokens "%u" sprintf send-log ;
 
 : handle-request ( msg method -- )
   {
