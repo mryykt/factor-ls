@@ -130,7 +130,10 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     -rot search-tokens
     text>>
     swap word-list>> at
-    [ stack-effect effect>string "`%s`" sprintf "contents" <linked-hash> spin set-of
+    [| word |
+        word name>> word vocabulary>> word stack-effect effect>string
+        "`%s` in `%s`\n\n***\n\nstack effect: `%s`" sprintf
+        "contents" <linked-hash> spin set-of
       "result" <linked-hash> spin set-of
       "jsonrpc" "2.0" set-of
       "id" msg "id" of set-of send
