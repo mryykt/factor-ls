@@ -84,6 +84,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
         LH{ }
           "triggerCharacters" { " " } set-of
         set-of
+      "hoverProvider" t set-of
     set-of
   set-of
   msg "params" of "capabilities" of "textDocument" of
@@ -103,10 +104,16 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   "id" dup msg at set-of
   send ] ;
 
+: hover ( msg -- )
+  "params" of dup
+  "textDocument" of "uri" of swap
+  "position" of 2drop ;
+
 : handle-request ( msg method -- )
   {
     { "initialize" [ initialize ] }
     { "textDocument/completion" [ completion ] }
+    { "textDocument/hover" [ hover ] }
     [ swap "id" of swap send-method-not-found ]
   } case ;
 
