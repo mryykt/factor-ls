@@ -111,7 +111,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     {
       { [ 2dup < ] [ 2drop +gt+ ] }
       { [ 2dup > ] [ 2drop +lt+ ] }
-      [ 2drop tk character>> pos "character" of 1 +
+      [ 2drop tk character>> pos "character" of
         {
           { [ 2dup > ] [ 2drop +lt+ ] }
           { [ 2dup tk text>> length - >= ] [ 2drop +eq+ ] }
@@ -119,13 +119,23 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       ] } cond
   ] ;
 
-: search-tokens ( source pos -- token )
-  [ comp-position ] curry search nip ;
+: search-tokens ( pos source  -- token/f )
+  tokens>> swap [ comp-position ] curry search nip ;
 
 : hover ( msg -- )
-  "params" of dup
-  "textDocument" of "uri" of sources get-global at tokens>> swap
-  "position" of search-tokens "%u" sprintf send-log ;
+  [let :> msg
+    msg "params" of dup
+    "position" of swap
+    "textDocument" of "uri" of sources get-global at dup
+    -rot search-tokens
+    text>>
+    swap word-list>> at
+    [ stack-effect effect>string "`%s`" sprintf "contents" <linked-hash> spin set-of
+      "result" <linked-hash> spin set-of
+      "jsonrpc" "2.0" set-of
+      "id" msg "id" of set-of send
+    ] when*
+  ] ;
 
 : handle-request ( msg method -- )
   {
