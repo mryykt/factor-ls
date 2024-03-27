@@ -8,10 +8,10 @@ IN: language-server.help
 : $inputs>md ( help word: ( a -- b ) -- str )
   [let :> rec
     [ dup length 2 =
-      [ first2 rec call "|%s|%s|\n" sprintf ]
+      [ first2 rec call "- %s: %s" sprintf ]
       [ drop "" ] if 
-    ] map concat
-    "# Inputs\n||value|\n|-|-|\n%s" sprintf ] ; inline
+    ] map "\n" join
+    "### Inputs\n%s" sprintf ] ; inline
 
 : seq>md ( seq word: ( a -- b ) -- str )
   [let :> rec
