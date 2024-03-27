@@ -1,9 +1,10 @@
 USING: kernel  namespaces continuations accessors vocabs vocabs.loader effects
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
+help
 json math math.parser formatting combinators
 sequences assocs linked-assocs
 binary-search math.order
-language-server.tokenize ;
+language-server.tokenize language-server.help ;
 IN: language-server
 
 TUPLE: source tokens vocab-name loaded-vocabs word-list ;
@@ -132,7 +133,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     swap word-list>> at
     [| word |
         word name>> word stack-effect effect>string "```factor\n: %s %s\n```" sprintf
-        "*no help*"
+        word word-help help>md
         word vocabulary>> "*Defined in %s*" sprintf
         { "" "" "" } 3sequence
         "contents" <linked-hash> spin set-of
