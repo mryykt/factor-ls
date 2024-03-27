@@ -13,10 +13,19 @@ IN: language-server.help
     ] map "\n" join
     "### Inputs\n%s" sprintf ] ; inline
 
+: $outputs>md ( help word: ( a -- b ) -- str )
+  [let :> rec
+    [ dup length 2 =
+      [ first2 rec call "- %s: %s" sprintf ]
+      [ drop "" ] if 
+    ] map "\n" join
+    "### Outputs\n%s" sprintf ] ; inline
+
 : seq>md ( seq word: ( a -- b ) -- str )
   [let :> rec
   dup first
   { { [ dup \ $inputs = ] [ drop 1 tail rec $inputs>md ] }
+    { [ dup \ $outputs = ] [ drop 1 tail rec $outputs>md ] }
     [ 2drop " " ]
   } cond ] ; inline
 
@@ -28,4 +37,4 @@ IN: language-server.help
   } cond ;
 
 : help>md ( seq -- str )
-  [ help>md-element ] map concat ;
+  [ help>md-element ] map "\n" join ;
