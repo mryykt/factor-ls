@@ -137,10 +137,11 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
         word vocabulary>> "*Defined in %s*" sprintf
         { "" "" "" } 3sequence
         "contents" <linked-hash> spin set-of
-      "result" <linked-hash> spin set-of
-      "jsonrpc" "2.0" set-of
-      "id" msg "id" of set-of send
-    ] when*
+    ]
+    [ json-null  ] if*
+    "result" <linked-hash> spin set-of
+    "jsonrpc" "2.0" set-of
+    "id" msg "id" of set-of send
   ] ;
 
 : handle-request ( msg method -- )
