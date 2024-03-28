@@ -1,4 +1,4 @@
-USING: accessors kernel combinators words help help.markup formatting
+USING: accessors kernel combinators words help help.markup formatting math
 sequences strings ;
 IN: language-server.help
 
@@ -7,8 +7,8 @@ IN: language-server.help
 
 : parameter>md ( help word: ( a -- b ) -- str )
   [let :> rec
-    [ dup length 2 =
-      [ first2 [ rec call ] bi@ "- *%s* : %s" sprintf ]
+    [ dup length 2 >=
+      [ [ first rec call ] [ 1 tail [ rec call ] map "" join ] bi "- *%s* : %s" sprintf ]
       [ drop "" ] if 
     ] map "\n" join ] ; inline
 
@@ -32,6 +32,7 @@ IN: language-server.help
     { [ dup \ $outputs = ] [ drop 1 tail rec $outputs>md ] }
     { [ dup \ $maybe = ] [ drop 1 tail rec $maybe>md ] }
     { [ dup \ $quotation = ] [ drop 1 tail [ "%u" sprintf ] map " " join "a `quotation` with stack effect `%s`" sprintf ] }
+    { [ dup \ $snippet = ] [ drop 1 tail [ rec call ] map "" join "`%s`" sprintf ] }
     [ 2drop " " ]
   } cond ] ; inline
 
