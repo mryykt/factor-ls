@@ -5,21 +5,20 @@ IN: language-server.help
 : words>md ( word -- str )
  name>> "`%s`" sprintf ;
 
-: $inputs>md ( help word: ( a -- b ) -- str )
+: parameter>md ( help word: ( a -- b ) -- str )
   [let :> rec
     [ dup length 2 =
-      [ first2 rec call "- %s: %s" sprintf ]
+      [ first2 [ rec call ] bi@ "- *%s* : %s" sprintf ]
       [ drop "" ] if 
-    ] map "\n" join
-    "### Inputs\n%s" sprintf ] ; inline
+    ] map "\n" join ] ; inline
+
+: $inputs>md ( help word: ( a -- b ) -- str )
+  parameter>md
+  "### Inputs\n%s" sprintf ; inline
 
 : $outputs>md ( help word: ( a -- b ) -- str )
-  [let :> rec
-    [ dup length 2 =
-      [ first2 rec call "- %s: %s" sprintf ]
-      [ drop "" ] if 
-    ] map "\n" join
-    "### Outputs\n%s" sprintf ] ; inline
+  parameter>md
+  "### Outputs\n%s" sprintf ; inline
 
 : $maybe>md ( help word: ( a -- b ) -- str )
   [let :> rec
@@ -36,9 +35,9 @@ IN: language-server.help
   } cond ] ; inline
 
 : help>md-element ( help -- str )
-  { { [ dup sequence? ] [ [ help>md-element ] seq>md ] }
+  { { [ dup string? ] [ ] }
+    { [ dup sequence? ] [ [ help>md-element ] seq>md ] }
     { [ dup word? ] [ name>> dup a/an swap "%s `%s`" sprintf ] }
-    { [ dup string? ] [ ] }
     [ drop "" ]
   } cond ;
 
