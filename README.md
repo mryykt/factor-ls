@@ -3,4 +3,4 @@ Implementation of language server protocol for Factor(WIP).
 | Feature    | remarks                 |
 | ---------- | ----------------------- |
 | Completion | word                    |
-| Hover      | word info(stack effect,vocabulary) |
+| Hover      | word info(stack effect, help, vocabulary) |
