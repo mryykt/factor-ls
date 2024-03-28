@@ -16,8 +16,9 @@ TUPLE: source tokens vocab-name loaded-vocabs word-list ;
 SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : send ( obj -- )
-  >json dup length "Content-Length: %d\r\n\r\n" printf
-  write flush ;
+  >json 
+  [ length "Content-Length: %d\r\n\r\n" printf ]
+  [ write flush ] bi ;
 
 : send-notification ( method params -- )
   [let :> params :> method
@@ -125,16 +126,15 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : hover ( msg -- )
   [let :> msg
-    msg "params" of dup
-    "position" of swap
-    "textDocument" of "uri" of sources get-global at dup
-    -rot search-tokens
-    text>>
+    msg "params" of
+    [ "position" of ]
+    [ "textDocument" of "uri" of  sources get-global at dup ] bi
+    -rot search-tokens text>>
     swap word-list>> at
-    [| word |
-        word name>> word stack-effect effect>string "```factor\n: %s %s\n```" sprintf
-        word word-help help>md
-        word vocabulary>> "*Defined in %s*" sprintf
+    [
+        [ [ name>> ] [ stack-effect effect>string ] bi "```factor\n: %s %s\n```" sprintf ]
+        [ word-help help>md ]
+        [ vocabulary>> "*Defined in %s*" sprintf ] tri
         { "" "" "" } 3sequence
         "contents" <linked-hash> spin set-of
     ]
@@ -229,7 +229,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   read utf8 decode json> ;
 
 : dispatch ( -- ? )
-  read-msg dup dup "id" swap key?
+  read-msg dup "id" over key?
     [ "method" ?of
       [ handle-request ]
       [ 2drop ] if ] ! invalid message
