@@ -37,7 +37,7 @@ IN: language-server.help
 
 : help>md-element ( help -- str )
   { { [ dup sequence? ] [ [ help>md-element ] seq>md ] }
-    { [ dup word? ] [ name>> "`%s`" sprintf ] }
+    { [ dup word? ] [ name>> dup a/an swap "%s `%s`" sprintf ] }
     { [ dup string? ] [ ] }
     [ drop "" ]
   } cond ;
