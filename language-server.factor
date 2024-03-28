@@ -17,7 +17,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : send ( obj -- )
   >json 
-  [ length "Content-Length: %d\r\n\r\n" printf ]
+  [ utf8 encode length "Content-Length: %d\r\n\r\n" printf ]
   [ write flush ] bi ;
 
 : send-notification ( method params -- )
