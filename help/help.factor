@@ -35,7 +35,9 @@ IN: language-server.help
     { [ dup \ $snippet = ] [ drop 1 tail [ rec call ] map "" join "`%s`" sprintf ] }
     { [ dup \ $description = ] [ drop 1 tail [ rec call ] map "" join "### Description\n%s" sprintf ] }
     { [ dup \ $notes = ] [ drop 1 tail [ rec call ] map "" join "### Notes\n%s" sprintf ] }
+    { [ dup \ $examples = ] [ drop 1 tail [ rec call ] map "" join "### Examples\n%s" sprintf ] }
     { [ dup \ $emphasis = ] [ drop 1 tail [ rec call ] map "" join "*%s*" sprintf ] }
+    { [ dup \ $code = ] [ drop 1 tail [ rec call ] map "\n" join "\n```factor\n%s\n```\n" sprintf ] }
     [ 2drop " " ]
   } cond ] ; inline
 
