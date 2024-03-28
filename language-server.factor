@@ -133,8 +133,8 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     swap word-list>> at
     [
         [ [ name>> ] [ stack-effect effect>string ] bi "```factor\n: %s %s\n```" sprintf ]
-        [ word-help help>md ]
-        [ vocabulary>> "*Defined in %s*" sprintf ] tri
+        [ vocabulary>> "*Defined in %s*" sprintf ]
+        [ word-help help>md ] tri
         { "" "" "" } 3sequence
         "contents" <linked-hash> spin set-of
     ]
