@@ -33,7 +33,7 @@ IN: language-server.help
     { [ dup \ $maybe = ] [ drop 1 tail rec $maybe>md ] }
     { [ dup \ $quotation = ] [ drop 1 tail [ "%u" sprintf ] map " " join "a `quotation` with stack effect `%s`" sprintf ] }
     { [ dup \ $snippet = ] [ drop 1 tail [ rec call ] map "" join "`%s`" sprintf ] }
-    { [ dup \ $description = ] [ drop 1 tail [ rec call ] map "" join "### description\n%s" sprintf ] }
+    { [ dup \ $description = ] [ drop 1 tail [ rec call ] map "" join "### Description\n%s" sprintf ] }
     [ 2drop " " ]
   } cond ] ; inline
 
