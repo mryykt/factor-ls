@@ -39,6 +39,7 @@ IN: language-server.help
     { [ dup \ $emphasis = ] [ drop 1 tail [ rec call ] map "" join "*%s*" sprintf ] }
     { [ dup \ $code = ] [ drop 1 tail [ rec call ] map "\n" join "\n```factor\n%s\n```\n" sprintf ] }
     { [ dup \ $example = ] [ drop 1 tail "\n" join "Example\n```factor\n%s\n```\n" sprintf ] }
+    { [ dup \ $markup-example = ] [ drop 1 swap nth  [ "%u" sprintf ] [ rec call ] bi "\n```factor\n%s print-element\n```\n\n%s" sprintf ] }
     [ 2drop " " ]
   } cond ] ; inline
 
