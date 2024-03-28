@@ -1,4 +1,5 @@
-USING: kernel  namespaces continuations accessors vocabs vocabs.loader effects
+USING: kernel  namespaces continuations accessors 
+vocabs vocabs.loader effects definitions
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
 help
 json math math.parser formatting combinators
@@ -146,7 +147,18 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   ] ;
 
 : goto-definition ( msg -- )
-  drop ;
+  [let :> msg
+    msg "params" of
+    [ "position" of ]
+    [ "textDocument" of "uri" of sources get-global at dup ] bi
+    -rot search-tokens text>>
+    swap word-list>> at
+    [ where "%u" sprintf ]
+    [ json-null ] if*
+    "result" <linked-hash> spin set-of
+    "jsonrpc" "2.0" set-of
+    "id" msg "id" of set-of send
+  ] ;
 
 : handle-request ( msg method -- )
   {
