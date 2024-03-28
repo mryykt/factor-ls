@@ -21,11 +21,17 @@ IN: language-server.help
     ] map "\n" join
     "### Outputs\n%s" sprintf ] ; inline
 
+: $maybe>md ( help word: ( a -- b ) -- str )
+  [let :> rec
+    [ rec call "%s or `f`" sprintf ] map "\n" join
+  ] ; inline
+
 : seq>md ( seq word: ( a -- b ) -- str )
   [let :> rec
   dup first
   { { [ dup \ $inputs = ] [ drop 1 tail rec $inputs>md ] }
     { [ dup \ $outputs = ] [ drop 1 tail rec $outputs>md ] }
+    { [ dup \ $maybe = ] [ drop 1 tail rec $maybe>md ] }
     [ 2drop " " ]
   } cond ] ; inline
 
