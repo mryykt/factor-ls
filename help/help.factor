@@ -34,12 +34,10 @@ IN: language-server.help
     [ 2drop " " ]
   } cond ] ; inline
 
-: help>md-element ( help -- str )
-  { { [ dup string? ] [ ] }
-    { [ dup sequence? ] [ [ help>md-element ] seq>md ] }
-    { [ dup word? ] [ name>> dup a/an swap "%s `%s`" sprintf ] }
-    [ drop "" ]
-  } cond ;
+GENERIC: help>md-element ( help -- str )
+M: string help>md-element ;
+M: sequence help>md-element [ help>md-element ] seq>md ;
+M: word help>md-element name>> dup a/an swap "%s `%s`" sprintf ;
 
 : help>md ( seq -- str )
   [ help>md-element ] map "\n" join ;
