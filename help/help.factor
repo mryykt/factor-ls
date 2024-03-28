@@ -31,6 +31,7 @@ IN: language-server.help
   { { [ dup \ $inputs = ] [ drop 1 tail rec $inputs>md ] }
     { [ dup \ $outputs = ] [ drop 1 tail rec $outputs>md ] }
     { [ dup \ $maybe = ] [ drop 1 tail rec $maybe>md ] }
+    { [ dup \ $quotation = ] [ drop 1 tail [ "%u" sprintf ] map " " join "a `quotation` with stack effect `%s`" sprintf ] }
     [ 2drop " " ]
   } cond ] ; inline
 
