@@ -1,4 +1,4 @@
-USING: kernel  namespaces continuations accessors system
+USING: kernel  namespaces continuations accessors system threads
 vocabs vocabs.loader effects definitions
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string io.pathnames
 help
@@ -248,13 +248,15 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
   read utf8 decode json> ;
 
 : dispatch ( -- ? )
-  read-msg dup "id" over key?
-    [ "method" ?of
-      [ handle-request ]
-      [ 2drop ] if ] ! invalid message
-    [ "method" ?of
-      [ handle-notification ]
-      [ 2drop send-invalied-request ] if ] if
+  read-msg "id" over key?
+    [
+      [ dup "method" ?of
+        [ handle-request ]
+        [ 2drop ] if ] ! invalid message
+      [ dup "method" ?of
+        [ handle-notification ]
+        [ 2drop send-invalied-request ] if ] if
+    ] 2curry  in-thread
   t ;
 
 : ls ( -- )
