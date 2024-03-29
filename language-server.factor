@@ -236,8 +236,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     { "textDocument/didClose"
       [ [let :> msg
         msg "params" of "textDocument" of "uri" of
-        { }
-        send-publish-diagnostics ] ] }
+        sources get-global delete-at ] ] }
     [ send-log drop ]
   } case ;
 
