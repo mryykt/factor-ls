@@ -1,6 +1,6 @@
-USING: kernel  namespaces continuations accessors 
+USING: kernel  namespaces continuations accessors system
 vocabs vocabs.loader effects definitions
-io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string
+io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string io.pathnames
 help
 json math math.parser formatting combinators
 sequences assocs linked-assocs
@@ -73,6 +73,12 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : send-method-not-found ( id method -- )
   -32601 swap send-err ;
+
+: <range> ( start-line start-char end-line end-char -- range )
+  [| sl sc el ec |
+      <linked-hash>
+      "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
+      "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
 : initialize ( msg -- )
   [let :> msg
@@ -153,7 +159,9 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     [ "textDocument" of "uri" of sources get-global at dup ] bi
     -rot search-tokens text>>
     swap word-list>> at
-    [ where "%u" sprintf ]
+    [ where first2 
+      1 - 0 over 1 <range> "range" <linked-hash> spin set-of
+      swap 9 tail vm-path parent-directory prepend-path "file://%s" sprintf "uri" swap set-of ]
     [ json-null ] if*
     "result" <linked-hash> spin set-of
     "jsonrpc" "2.0" set-of
@@ -168,12 +176,6 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     { "textDocument/definition" [ goto-definition ] }
     [ swap "id" of swap send-method-not-found ]
   } case ;
-
-: <range> ( start-line start-char end-line end-char -- range )
-  [| sl sc el ec |
-      <linked-hash>
-      "start" <linked-hash> "line" sl set-of "character" sc set-of set-of
-      "end" <linked-hash> "line" el set-of "character" ec set-of set-of ] call ;
 
 : push-words ( words assoc -- )
   [let :> assoc
