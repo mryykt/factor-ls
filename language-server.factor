@@ -255,7 +255,7 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
       [ dup "method" ?of
         [ handle-notification ]
         [ 2drop send-invalied-request ] if ] if
-    ] 2curry  in-thread
+    ] 2curry in-thread
   t ;
 
 : ls ( -- )
