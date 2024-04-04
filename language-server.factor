@@ -183,8 +183,9 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
 
 : make-word-list ( vocabs vocab -- assoc )
   [let <linked-hash> :> word-list
-  >vocab-link vocab-words word-list push-words
+  swap
   [ >vocab-link vocab-words word-list push-words ] each
+  >vocab-link vocab-words word-list push-words
   word-list
   ] ;
 
