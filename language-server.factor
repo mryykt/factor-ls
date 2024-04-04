@@ -1,5 +1,5 @@
-USING: kernel  namespaces continuations accessors system threads
-vocabs vocabs.loader effects definitions
+USING: kernel namespaces continuations accessors system threads
+vocabs vocabs.loader words effects definitions
 io io.encodings io.encodings.utf8 io.encodings.binary io.encodings.string io.pathnames
 help
 json math math.parser formatting combinators
@@ -137,16 +137,22 @@ SYMBOLS: publish-diagnostics-capable diagnostics sources ;
     msg "params" of
     [ "position" of ]
     [ "textDocument" of "uri" of  sources get-global at dup ] bi
-    -rot search-tokens text>>
-    swap word-list>> at
-    [
+    -rot search-tokens text>> 
+    swap dupd word-list>> at ! word-name word/f
+    [ nip
         [ [ name>> ] [ stack-effect effect>string ] bi "```factor\n: %s %s\n```" sprintf ]
         [ vocabulary>> "*Defined in %s*" sprintf ]
         [ word-help help>md ] tri
         { "" "" "" } 3sequence
-        "contents" <linked-hash> spin set-of
-    ]
-    [ json-null  ] if*
+        "contents" <linked-hash> spin set-of ]
+    [ "syntax" lookup-word
+      [ 
+        [ [ name>> ] [ stack-effect effect>string ] bi "```factor\n: %s %s\n```" sprintf ]
+        [ vocabulary>> "*Defined in %s*" sprintf ]
+        [ word-help help>md ] tri
+        { "" "" "" } 3sequence
+        "contents" <linked-hash> spin set-of ]
+      [ json-null ] if* ] if*
     "result" <linked-hash> spin set-of
     "jsonrpc" "2.0" set-of
     "id" msg "id" of set-of send
